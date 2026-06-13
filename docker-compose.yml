@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  accountservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: accountservice
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_APPLICATION_NAME=accountService
+      - SERVER_PORT=8082
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:testdb
+      - SPRING_DATASOURCE_DRIVECLASSNAME=org.h2.Driver
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_H2_CONSOLE_ENABLED=true
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.H2Dialect
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - MANAGEMENT_ENDPOINTS_WEB_BASE_PATH=/
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - accountservice-net
+    volumes:
+      - ./logs:/app/logs
+
+networks:
+  accountservice-net:
+    driver: bridge
+
